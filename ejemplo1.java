@@ -1,7 +1,6 @@
 // Expression interface used to
 // check the interpreter.
-interface Expression
-{
+interface Expression{
     boolean interpreter(String con);
 }
   
@@ -9,23 +8,18 @@ interface Expression
 // the above interface. This interpreter 
 // just check if the data is same as the 
 // interpreter data.
-class TerminalExpression implements Expression 
-{
+class TerminalExpression implements Expression {
     String data;
   
-    public TerminalExpression(String data)
-    {
+    public TerminalExpression(String data){
         this.data = data; 
     }
   
-    public boolean interpreter(String con) 
-    {
-        if(con.contains(data))
-        {
+    public boolean interpreter(String con) {
+        if(con.contains(data)){
             return true;
         }
-        else
-        {
+        else{
             return false;  
         }
     }
@@ -39,13 +33,11 @@ class OrExpression implements Expression
     Expression expr1;
     Expression expr2;
   
-    public OrExpression(Expression expr1, Expression expr2) 
-    {
+    public OrExpression(Expression expr1, Expression expr2) {
         this.expr1 = expr1;
         this.expr2 = expr2;
     }
-    public boolean interpreter(String con) 
-    {     	
+    public boolean interpreter(String con) {     	
         return expr1.interpreter(con) || expr2.interpreter(con);
     }
 }
@@ -54,28 +46,23 @@ class OrExpression implements Expression
 // the above interface. This interpreter 
 // just returns the And condition of the 
 // data is same as the interpreter data.
-class AndExpression implements Expression 
-{
+class AndExpression implements Expression {
     Expression expr1;
     Expression expr2;
   
-    public AndExpression(Expression expr1, Expression expr2) 
-    { 
+    public AndExpression(Expression expr1, Expression expr2) { 
         this.expr1 = expr1;
         this.expr2 = expr2;
     }
-    public boolean interpreter(String con) 
-    {     	
+    public boolean interpreter(String con) {     	
         return expr1.interpreter(con) && expr2.interpreter(con);
     }
 }
   
 // Driver class
-class InterpreterPattern
-{
+class InterpreterPattern{
   
-    public static void main(String[] args) 
-    {
+    public static void main(String[] args) {
         Expression person1 = new TerminalExpression("Kushagra");
         Expression person2 = new TerminalExpression("Lokesh");
         Expression isSingle = new OrExpression(person1, person2);
