@@ -1,78 +1,119 @@
 public interface Expression {
-   public boolean interpret(String context);
+    int interpret();
 }
 
-public class TerminalExpression implements Expression {
-	
-   private String data;
-
-   public TerminalExpression(String data){
-      this.data = data; 
-   }
-
-   @Override
-   public boolean interpret(String context) {
-   
-      if(context.contains(data)){
-         return true;
-      }
-      return false;
-   }
+public class NumberExpression implements Expression{
+    private int number;
+    public NumberExpression(int number){
+        this.number=number;
+    }
+    public NumberExpression(String number){
+        this.number=Integer.parseInt(number);
+    }
+    @Override
+    public int interpret(){
+        return this.number;
+    }
 }
 
-public class OrExpression implements Expression {
-	 
-   private Expression expr1 = null;
-   private Expression expr2 = null;
-
-   public OrExpression(Expression expr1, Expression expr2) { 
-      this.expr1 = expr1;
-      this.expr2 = expr2;
-   }
-
-   @Override
-   public boolean interpret(String context) {		
-      return expr1.interpret(context) || expr2.interpret(context);
-   }
+public class AdditionExpression implements Expression {
+    private Expression firstExpression,secondExpression;
+    public AdditionExpression(Expression firstExpression, Expression secondExpression){
+        this.firstExpression=firstExpression;
+        this.secondExpression=secondExpression;
+    }
+    @Override
+    public int interpret(){
+        return this.firstExpression.interpret()+this.secondExpression.interpret();
+    }
+    @Override
+    public String toString(){
+        return "+";
+    }
 }
 
-public class AndExpression implements Expression {
-	 
-   private Expression expr1 = null;
-   private Expression expr2 = null;
-
-   public AndExpression(Expression expr1, Expression expr2) { 
-      this.expr1 = expr1;
-      this.expr2 = expr2;
-   }
-
-   @Override
-   public boolean interpret(String context) {		
-      return expr1.interpret(context) && expr2.interpret(context);
-   }
+public class SubtractionExpression implements Expression{
+    private Expression firstExpression,secondExpression;
+    public SubtractionExpression(Expression firstExpression, Expression secondExpression){
+        this.firstExpression=firstExpression;
+        this.secondExpression=secondExpression;
+    }
+    @Override
+    public int interpret(){
+        return this.firstExpression.interpret()-this.secondExpression.interpret();
+    }
+    @Override
+    public String toString(){
+        return "-";
+    }
 }
 
-public class InterpreterPatternDemo {
+public class MultiplicationExpression implements Expression{
+    private Expression firstExpression,secondExpression;
+    public MultiplicationExpression(Expression firstExpression, Expression secondExpression){
+        this.firstExpression=firstExpression;
+        this.secondExpression=secondExpression;
+    }
+    @Override
+    public int interpret(){
+        return this.firstExpression.interpret()*this.secondExpression.interpret();
+    }
+    @Override
+    public String toString(){
+        return "*";
+    }
+}
 
-   //Rule: Robert and John are male
-   public static Expression getMaleExpression(){
-      Expression robert = new TerminalExpression("Robert");
-      Expression john = new TerminalExpression("John");
-      return new OrExpression(robert, john);		
-   }
+public class ParserUtil {
+    public static boolean isOperator(String symbol) {
+        return (symbol.equals("+") || symbol.equals("-") || symbol.equals("*"));
+    }
+    public static Expression getExpressionObject(Expression firstExpression,Expression secondExpression,String symbol){
+        if(symbol.equals("+"))
+            return new AdditionExpression(firstExpression,secondExpression);
+        else if(symbol.equals("-"))
+            return new SubtractionExpression(firstExpression,secondExpression);
+        else
+            return new MultiplicationExpression(firstExpression,secondExpression);
+    }
+}
 
-   //Rule: Julie is a married women
-   public static Expression getMarriedWomanExpression(){
-      Expression julie = new TerminalExpression("Julie");
-      Expression married = new TerminalExpression("Married");
-      return new AndExpression(julie, married);		
-   }
+//PARSE PARA PODER HACER LA OPERACIÓN
+//UTILIZA UNA PILA PARA HACER LAS OPERACIONES EN ORDEN
+public class ExpressionParser {
+    Stack stack=new Stack<>();
+    public int parse(String str){
+        String[] tokenList = str.split(" ");
+        for (String symbol : tokenList) {
+            if (!ParserUtil.isOperator(symbol)) {
+                Expression numberExpression = new NumberExpression(symbol);
+                stack.push(numberExpression);
+                System.out.println(String.format("Pushed to stack: %d", numberExpression.interpret()));
+            } else  if (ParserUtil.isOperator(symbol)) {
+                Expression firstExpression = stack.pop();
+                Expression secondExpression = stack.pop();
+                System.out.println(String.format("Popped operands %d and %d",
+                        firstExpression.interpret(), secondExpression.interpret()));
+                Expression operator = ParserUtil.getExpressionObject(firstExpression, secondExpression, symbol);
+                System.out.println(String.format("Applying Operator: %s", operator));
+                int result = operator.interpret();
+                NumberExpression resultExpression = new NumberExpression(result);
+                stack.push(resultExpression);
+                System.out.println(String.format("Pushed result to stack: %d", resultExpression.interpret()));
+            }
+        }
+       int result= stack.pop().interpret();
+        return result;
+    }
+}
 
-   public static void main(String[] args) {
-      Expression isMale = getMaleExpression();
-      Expression isMarriedWoman = getMarriedWomanExpression();
-
-      System.out.println("John is male? " + isMale.interpret("John"));
-      System.out.println("Julie is a married women? " + isMarriedWoman.interpret("Married Julie"));
-   }
+//TEST
+public class ExpressionParserTest {
+    @Test
+    public void testParse() throws Exception {
+      String input="2 1 5 + *";
+       ExpressionParser expressionParser=new ExpressionParser();
+       int result=expressionParser.parse(input);
+       System.out.println("Final result: "+result);
+    }
 }
